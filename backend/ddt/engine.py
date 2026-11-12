@@ -115,13 +115,18 @@ def _set_path(record: dict, path: str, value: Any) -> None:
 
 def order_like_schema(value: Any, schema: dict, root: dict) -> Any:
     """Order object keys as the schema declares them (undeclared keys follow, sorted)."""
+    schema = _resolve(schema, root)
+    if isinstance(value, list):
+        items = schema.get("items")
+        items = items if isinstance(items, dict) else {}
+        return [order_like_schema(v, items, root) for v in value]
     if not isinstance(value, dict):
         return value
-    props = _resolve(schema, root).get("properties")
+    props = schema.get("properties")
     props = props if isinstance(props, dict) else {}
     ordered = {k: order_like_schema(value[k], props[k], root) for k in props if k in value}
     for k in sorted(set(value) - set(props)):
-        ordered[k] = value[k]
+        ordered[k] = order_like_schema(value[k], {}, root)
     return ordered
 
 

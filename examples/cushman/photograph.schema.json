@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Photograph",
+  "description": "A photograph described with schema.org property names (https://schema.org/Photograph). Hand-written for this example: schema.org publishes no JSON Schema of its own.",
+  "type": "object",
+  "required": ["identifier", "dateCreated", "description"],
+  "additionalProperties": false,
+  "properties": {
+    "identifier": {"type": "string", "minLength": 1},
+    "url": {"type": "string", "pattern": "^https?://"},
+    "description": {"type": "string", "minLength": 1},
+    "dateCreated": {"type": "string", "format": "date"},
+    "temporal": {"type": "string", "description": "The date as written by the archive."},
+    "dateModified": {"type": "string", "format": "date"},
+    "genre": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "keywords": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "about": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "contentLocation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["addressCountry"],
+        "additionalProperties": false,
+        "properties": {
+          "streetAddress": {"type": "string"},
+          "addressLocality": {"type": "string"},
+          "county": {"type": "string"},
+          "addressRegion": {"type": "string"},
+          "addressCountry": {"type": "string"}
+        }
+      }
+    }
+  }
+}

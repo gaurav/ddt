@@ -28,6 +28,21 @@ def test_replay_gives_identical_output(project):
     assert Project.open(HENDERSON, source=EXCERPT).output_sha256() == project.output_sha256()
 
 
+def test_cushman_example_builds_arrays_of_places():
+    cushman = EXAMPLES / "cushman" / "cushman.ddt.yaml"
+    project = Project.open(cushman, source=FIXTURES / "cushman_excerpt.csv")
+    assert project.summary()["records"] == 42 and project.summary()["errors"] == 0
+    first = project.result.records[0]
+    assert first["dateCreated"] == "1938-09-03" and first["dateModified"] == "2003-10-16"
+    places = [r["contentLocation"] for r in project.result.records if "contentLocation" in r]
+    assert places and all(isinstance(p, list) for p in places)  # one place is still a list
+    # Keys inside array items follow the schema's order too.
+    assert list(places[0][0])[-1] == "addressCountry"
+    assert all(isinstance(r["genre"], list) for r in project.result.records if "genre" in r)
+    again = Project.open(cushman, source=FIXTURES / "cushman_excerpt.csv")
+    assert again.output_sha256() == project.output_sha256()
+
+
 def test_accepted_edit_reports_its_effect_and_can_be_undone(project):
     before = project.output_sha256()
     effect = project.set_field("scientificName", "$trim(ScrapedName)", author="test")

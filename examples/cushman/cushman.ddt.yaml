@@ -1,0 +1,45 @@
+ddt: 1
+source:
+  file: ../../data/cushman/cushman_metadata.csv
+  sha256: bba8724e8746d5ff937829768f383ae6dc593c53a034bca61fa0aefa3fe15d7f
+  encoding: mac_roman
+schema: photograph.schema.json
+fields:
+  identifier: ID
+  url: PURL
+  description: '$exists(`Description from Slide Mount`) ? `Description from Slide Mount` : `Description from Notebook`'
+  dateCreated: |-
+    `Start Date` ? (
+      $p := $split(`Start Date`, "/");
+      "19" & $pad($p[2], -2, "0") & "-" & $pad($p[0], -2, "0") & "-" & $pad($p[1], -2, "0")
+    )
+  temporal: '`Archive Date`'
+  dateModified: |-
+    (
+      $p := $split(LastUpdated, "/");
+      "20" & $pad($p[2], -2, "0") & "-" & $pad($p[0], -2, "0") & "-" & $pad($p[1], -2, "0")
+    )
+  genre: '$distinct([`Genre 1`, `Genre 2`, `Genre 3`, `Genre 4`])[]'
+  keywords: |-
+    $distinct(
+    [`Topical Subject Headings 1`, `Topical Subject Headings 2`, `Topical Subject Headings 3`,
+     `Topical Subject Headings 4`, `Topical Subject Headings 5`, `Topical Subject Headings 6`,
+     `Topical Subject Headings 7`, `Topical Subject Headings 8`, `Topical Subject Headings 9`,
+     `Topical Subject Headings 10`, `Topical Subject Headings 11`, `Topical Subject Headings 12`])[]
+  about: |-
+    $distinct(
+    [`Personal Names 1`, `Personal Names 2`, `Personal Names 3`, `Personal Names 4`,
+     `Personal Names 5`, `Corporate Names 1`, `Corporate Names 2`, `Corporate Names 3`,
+     `Corporate Names 4`, `Corporate Names 5`, `Corporate Names 6`, `Corporate Names 7`,
+     `Other Names 1`, `Other Names 2`, `Other Names 3`, `Other Names 4`,
+     `Other 1`, `Other 2`, `Other 3`, `Other 4`, `Other 5`, `Other 6`, `Other 7`])[]
+  contentLocation: |-
+    [
+      {"streetAddress": `Street Address`, "addressLocality": City, "county": County,
+       "addressRegion": `State/Province`, "addressCountry": Country},
+      {"streetAddress": `Street Address 2`, "addressLocality": `City 2`, "county": `County 2`,
+       "addressRegion": `State/Province 2`, "addressCountry": `Country 2`},
+      {"addressLocality": `City 3`, "county": `County 3`,
+       "addressRegion": `State/Province 3`, "addressCountry": `Country 3`},
+      {"addressRegion": `State/Province 4`, "addressCountry": `Country 4`}
+    ][$count($keys($)) > 0][]

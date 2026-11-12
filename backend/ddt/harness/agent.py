@@ -30,6 +30,8 @@ How expressions work:
 - Empty cells are absent from the row. An expression with no result leaves the field out of
   the record, which is right for optional fields.
 - Arrays: [`City 1`, `City 2`] gives an array of the cells that are filled.
+- JSONata turns a one-item result into the item itself. When the schema wants an array, end
+  the expression with [] so a single result stays an array: $distinct([`Genre 1`, `Genre 2`])[]
 - $now(), $millis() and $random() are not available: output must not change between runs.
 
 How to work:
