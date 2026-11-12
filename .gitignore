@@ -1,0 +1,15 @@
+# Scratch directory
+/data/
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# Local model list (copy ddt.example.toml)
+/ddt.toml

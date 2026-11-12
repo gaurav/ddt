@@ -1,0 +1,14 @@
+# Copy to ddt.toml to choose which models the chat panel offers.
+# Without a ddt.toml, DDT lists whatever a local Ollama server has installed.
+# Any OpenAI-compatible endpoint works; the model must support tool calling.
+
+[[models]]
+name = "Qwen3 14B (Ollama)"
+model = "qwen3:14b"
+base_url = "http://localhost:11434/v1"
+
+[[models]]
+name = "Llama 3.3 70B (OpenRouter)"
+model = "meta-llama/llama-3.3-70b-instruct"
+base_url = "https://openrouter.ai/api/v1"
+api_key_env = "OPENROUTER_API_KEY"

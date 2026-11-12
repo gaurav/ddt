@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Occurrence",
+  "description": "A species occurrence record using Darwin Core term names. Hand-written for this example: a small subset of the terms GBIF's Occurrence API returns, with the constraints a publisher would want checked.",
+  "type": "object",
+  "required": ["occurrenceID", "basisOfRecord", "scientificName", "eventDate"],
+  "additionalProperties": false,
+  "properties": {
+    "occurrenceID": {"type": "string", "minLength": 1},
+    "basisOfRecord": {
+      "enum": ["HumanObservation", "MachineObservation", "PreservedSpecimen", "FossilSpecimen", "LivingSpecimen", "MaterialSample"]
+    },
+    "institutionCode": {"type": "string"},
+    "collectionCode": {"type": "string"},
+    "modified": {"type": "string", "format": "date"},
+    "scientificName": {"type": "string", "minLength": 1},
+    "verbatimIdentification": {"type": "string"},
+    "vernacularName": {"type": "string"},
+    "kingdom": {"enum": ["Animalia", "Plantae", "Fungi", "Protozoa", "Chromista", "Bacteria", "Archaea"]},
+    "phylum": {"type": "string"},
+    "class": {"type": "string"},
+    "order": {"type": "string"},
+    "family": {"type": "string", "pattern": "^[A-Z][a-z]+(idae|aceae)$"},
+    "genus": {"type": "string", "pattern": "^[A-Z][a-z]+$"},
+    "identifiedBy": {"type": "string"},
+    "eventDate": {"type": "string", "format": "date"},
+    "verbatimEventDate": {"type": "string"},
+    "country": {"type": "string"},
+    "countryCode": {"type": "string", "pattern": "^[A-Z]{2}$"},
+    "stateProvince": {"enum": ["Colorado", "Wyoming", "Utah", "New Mexico", "Nebraska", "Kansas"]},
+    "locality": {"type": "string"},
+    "verbatimLocality": {"type": "string"},
+    "associatedMedia": {"type": "string", "pattern": "^https?://"}
+  }
+}
