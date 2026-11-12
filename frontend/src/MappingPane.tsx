@@ -41,7 +41,7 @@ export function MappingPane({ project, onProject, onShowErrors }: Props) {
           <tr>
             <th>Output field</th>
             <th>Expression</th>
-            <th>Rows with errors</th>
+            <th title="Rows with errors in this field">Errors</th>
           </tr>
         </thead>
         <tbody>

@@ -67,6 +67,14 @@ def test_store_paging_filters_facets_and_profile():
     assert [r["_row"] for r in hit["rows"]] == [1, 3]
     assert store.rows("input", filters=[{"column": "d", "op": "empty"}])["total"] == 1
     assert store.rows("input", sort="n", descending=True)["rows"][0]["n"] == "3"
+    numbers = Store(["n"], [["10"], ["9"], ["x"], [""], ["100"]])
+    assert [r["n"] for r in numbers.rows("input", sort="n")["rows"]] == [
+        "9",
+        "10",
+        "100",
+        "x",
+        None,
+    ]
     facet = store.facet("input", "s", filters=[{"column": "s", "op": "in", "values": ["y"]}])
     # A column's own filter does not narrow its facet, so other values stay selectable.
     assert facet["values"] == [{"value": "x", "count": 2}, {"value": "y", "count": 1}]

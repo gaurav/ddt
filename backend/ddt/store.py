@@ -138,7 +138,11 @@ class Store:
         if sort:
             if sort not in self.columns[table]:
                 raise ValueError(f"unknown column {sort!r}")
-            order = f"{q(sort)} {'DESC' if descending else 'ASC'} NULLS LAST, _row"
+            # Values are stored as text; numbers sort as numbers, then everything else as text.
+            way = "DESC" if descending else "ASC"
+            order = (
+                f"TRY_CAST({q(sort)} AS DOUBLE) {way} NULLS LAST, {q(sort)} {way} NULLS LAST, _row"
+            )
         total = self.con.execute(f"SELECT count(*) FROM {table}{where}", params).fetchone()[0]
         names = ["_row", *self.columns[table]]
         cur = self.con.execute(
