@@ -13,6 +13,13 @@ CSV input, and output is validated against a JSON Schema. See `README.md` for th
 - Full example data lives in the gitignored `data/` directory; README has the download commands.
   Tests use the excerpts in `tests/fixtures/`.
 
+## Checking the UI
+
+There are no frontend tests. To check a UI change, build the frontend, start `ddt serve`, and
+drive the page with headless Playwright (Chromium). Wait for `/api/project` to answer before
+loading the page: the Cushman example takes about 11 seconds to start. Grid columns are
+virtualised, so a header that is scrolled out of view is not in the DOM.
+
 ## Invariants (do not weaken without asking)
 
 - The only way to change a mapping is `Project.set_mapping` (`backend/ddt/project.py`). The UI,

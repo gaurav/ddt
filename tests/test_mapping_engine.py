@@ -111,3 +111,9 @@ def test_jsonl_is_compact_and_ordered():
     text = to_jsonl(run(FIELDS).records)
     assert text.count("\n") == 3
     assert json.loads(text.splitlines()[0])["id"] == "a"
+
+
+def test_several_missing_required_fields_give_one_error_each():
+    validator = make_validator(SCHEMA)
+    errors = validate_records(validator, [{}, {"id": "a", "when": "1907-02-09", "place": {}}])
+    assert sorted((e.row, e.field) for e in errors) == [(1, "id"), (1, "when"), (2, "place.state")]

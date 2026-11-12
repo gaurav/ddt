@@ -161,3 +161,10 @@ def test_api_end_to_end(project, tmp_path):
 
 def test_model_config_defaults_to_ollama(tmp_path):
     assert ModelConfig(name="x", model="x").base_url.startswith("http://localhost:11434")
+
+
+def test_a_named_but_missing_model_config_is_an_error(tmp_path):
+    from ddt.harness.models import load_models
+
+    with pytest.raises(FileNotFoundError):
+        load_models(tmp_path / "missing.toml")

@@ -57,6 +57,9 @@ def decode(raw: bytes, encoding: str) -> str:
         return raw.decode("utf-8-sig", errors=_FALLBACK_ERRORS)
     if encoding.lower().replace("_", "-") in ("utf-8", "utf8"):
         return raw.decode("utf-8-sig")
+    if encoding.lower() in ("cp1252", "windows-1252"):
+        # cp1252 leaves five bytes undefined; read those as latin-1 instead of failing.
+        return raw.decode("cp1252", errors=_FALLBACK_ERRORS)
     return raw.decode(encoding)
 
 

@@ -82,3 +82,16 @@ def test_store_paging_filters_facets_and_profile():
     assert types == {"n": "integer", "s": "text", "d": "date"}
     with pytest.raises(ValueError):
         store.rows("input", filters=[{"column": 'x"; DROP TABLE input; --', "op": "empty"}])
+
+
+def test_fallback_decodes_only_the_invalid_bytes():
+    # Valid UTF-8, then a lone Latin-1 byte, then 0x81, which cp1252 leaves undefined.
+    valid = "\u00e9" * 8
+    result = import_csv(b"a\n" + valid.encode() + b" \xe9 \x81\n")
+    assert result.info.encoding == UTF8_WITH_FALLBACK and result.info.fallback_bytes == 2
+    assert result.rows == [[valid + " \u00e9 \u0081"]]
+
+
+def test_cp1252_with_an_undefined_byte_does_not_fail():
+    assert import_csv(b"a\ncaf\xe9 \x81\n").rows == [["caf\u00e9 \u0081"]]
+    assert import_csv(b"a\n\x81\n", "cp1252").rows == [["\u0081"]]
