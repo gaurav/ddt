@@ -75,7 +75,7 @@ def detect_encoding(raw: bytes) -> tuple[str, int]:
     except UnicodeDecodeError:
         pass
     high = sum(1 for b in raw if b > 127)
-    invalid = raw.decode("utf-8", errors="replace").count("�")
+    invalid = raw.decode("utf-8", errors="replace").count("\ufffd")
     if invalid * 4 < high:
         return UTF8_WITH_FALLBACK, invalid
 
@@ -117,7 +117,7 @@ def import_csv(raw: bytes, encoding: str | None = None) -> ImportResult:
     text = decode(raw, encoding)
     fallback = 0
     if encoding == UTF8_WITH_FALLBACK:
-        fallback = raw.decode("utf-8", errors="replace").count("�")
+        fallback = raw.decode("utf-8", errors="replace").count("\ufffd")
 
     # newline="" lets the csv module see \r, \n and \r\n itself, including inside quoted cells.
     records = list(csv.reader(io.StringIO(text, newline="")))
