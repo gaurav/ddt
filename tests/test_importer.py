@@ -5,7 +5,7 @@ from ddt.store import Store
 
 
 def test_plain_utf8_with_bom():
-    result = import_csv("﻿a,b\r\n1,é\r\n".encode())
+    result = import_csv("\ufeffa,b\r\n1,é\r\n".encode())
     assert result.columns == ["a", "b"]
     assert result.rows == [["1", "é"]]
     assert result.info.encoding == "utf-8"
@@ -22,7 +22,7 @@ def test_henderson_mixed_encoding_and_duplicate_headers(henderson_raw):
     assert {"scientificName_1", "scientificName_2"} <= set(result.columns)
     assert {"original": " Name", "name": "Name", "index": 55} in result.info.header_renames
     text = "\n".join(",".join(r) for r in result.rows)
-    assert "�" not in text  # nothing was replaced with the "unknown character" mark
+    assert "\ufffd" not in text  # nothing was replaced with the "unknown character" mark
     assert "Soják" in text  # a Latin-1 byte, read through the fallback
 
 
@@ -32,7 +32,9 @@ def test_cushman_mac_roman_and_bare_cr(cushman_raw):
     assert len(result.rows) == 42 and len(result.columns) == 90
     assert result.info.ragged_rows == []
     text = "\n".join(",".join(r) for r in result.rows)
-    assert "é" in text and "�" not in text
+    # "Carrâe" is a typo in the source ("Vieux Carré"); it shows the bytes were read as Mac Roman
+    # and kept as they are, not corrected.
+    assert "Vieux Carrâe" in text and "reads…" in text and "\ufffd" not in text
 
 
 def test_explicit_encoding_is_not_marked_detected(cushman_raw):
