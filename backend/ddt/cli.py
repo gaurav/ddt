@@ -80,9 +80,10 @@ def cmd_serve(args: argparse.Namespace) -> int:
 
     from .api import create_app
 
+    print(f"Loading {args.mapping} and running the mapping...", flush=True)
     project = Project.open(args.mapping, source=args.source)
     app = create_app(project, config_path=Path(args.config) if args.config else None)
-    print(f"DDT: http://127.0.0.1:{args.port}")
+    print(f"DDT: http://127.0.0.1:{args.port}", flush=True)
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
     return 0
 
@@ -108,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     serve = sub.add_parser("serve", help="open a mapping in the web UI")
     serve.add_argument("mapping")
     serve.add_argument("--source", help="use this CSV instead of the one the mapping names")
-    serve.add_argument("--port", type=int, default=8765)
+    serve.add_argument("--port", type=int, default=8787)
     serve.add_argument("--config", help="model list (default: ./ddt.toml)")
     serve.set_defaults(func=cmd_serve)
 

@@ -59,6 +59,7 @@ class Project:
         self.validator = make_validator(schema)
         self.columns = self.imported.columns
         self.store = Store(self.columns, self.imported.rows)
+        self.input_profile = self.store.profile("input")  # the input never changes
         self.engine = JsonataEngine(self.columns, self.imported.rows)
         self.history: list[Mapping] = []
         self.log: list[dict] = []
@@ -97,6 +98,7 @@ class Project:
         result = self.engine.run(compiled, self.schema)
         result.errors.extend(validate_records(self.validator, result.records))
         self.mapping, self.result, self._compiled = mapping, result, compiled
+        self._output_sha256: str | None = None
         self.store.set_output(list(mapping.fields), result.records, result.errors)
         in_use = {e for m in [*self.history, mapping] for e in m.fields.values()}
         self.engine.forget_unused(in_use)
@@ -105,7 +107,10 @@ class Project:
         return to_jsonl(self.result.records)
 
     def output_sha256(self) -> str:
-        return hashlib.sha256(self.output_jsonl().encode("utf-8")).hexdigest()
+        if self._output_sha256 is None:
+            digest = hashlib.sha256(self.output_jsonl().encode("utf-8"))
+            self._output_sha256 = digest.hexdigest()
+        return self._output_sha256
 
     # --- editing -----------------------------------------------------------------------------
 
@@ -182,7 +187,7 @@ class Project:
     def unused_columns(self) -> list[str]:
         """Input columns that hold data but that no expression reads: data left behind."""
         read = {name for expr in self._compiled.values() for name in expr.names}
-        filled = {p["name"] for p in self.store.profile("input") if p["filled"]}
+        filled = {p["name"] for p in self.input_profile if p["filled"]}
         return [c for c in self.columns if c in filled and c not in read]
 
     def unmapped_fields(self) -> list[dict]:
@@ -220,7 +225,7 @@ class Project:
             declared = sub.get("type")
             if isinstance(declared, list):
                 declared = "/".join(declared)
-            p["type"] = declared or "any"
+            p["type"] = declared or ("enum" if "enum" in sub else "any")
             if sub.get("format"):
                 p["type"] += f" ({sub['format']})"
             p["expression"] = self.mapping.fields.get(p["name"])
@@ -233,7 +238,7 @@ class Project:
             "schema": self.schema,
             "mapping": self.mapping.to_yaml(),
             "fields": self.mapping.fields,
-            "input_columns": self.store.profile("input"),
+            "input_columns": self.input_profile,
             "output_columns": self.output_profile(),
             "summary": self.summary(),
         }

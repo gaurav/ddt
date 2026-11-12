@@ -132,7 +132,7 @@ def _get_mapping(project: Project, args: dict) -> Any:
 
 
 def _list_columns(project: Project, args: dict) -> Any:
-    return project.store.profile("input")
+    return project.input_profile
 
 
 def _profile_column(project: Project, args: dict) -> Any:
