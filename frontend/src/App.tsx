@@ -76,6 +76,11 @@ export function App() {
   }, []);
   useEffect(refresh, [refresh]);
 
+  // Once a field has no errors left, a filter on its errors would only show an empty grid.
+  useEffect(() => {
+    if (project && errorField !== null && !(errorField in project.summary.by_field)) setErrorField(null);
+  }, [project, errorField]);
+
   const openFacet = useCallback(
     (column: string) => setFacets((f) => ({ ...f, [table]: [...f[table].filter((c) => c !== column), column] })),
     [table],

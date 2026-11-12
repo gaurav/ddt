@@ -168,3 +168,23 @@ def test_a_named_but_missing_model_config_is_an_error(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         load_models(tmp_path / "missing.toml")
+
+
+def test_malformed_tool_calls_from_a_model_are_repaired(project):
+    # No call id, and arguments as an object instead of a JSON string.
+    edit = {"path": "scientificName", "expression": "ScrapedName"}
+    sloppy = {"function": {"name": "set_field", "arguments": edit}}
+    model = ScriptedModel(
+        [
+            {"content": "", "tool_calls": [sloppy, {"function": {"name": "validation_summary"}}]},
+            {"content": "Done."},
+        ]  # fmt: skip
+    )
+    conversation = Conversation(project)
+    conversation.turn(model, "m", "go")
+    assert project.mapping.fields["scientificName"] == "ScrapedName"
+    assistant = conversation.messages[2]
+    ids = [c["id"] for c in assistant["tool_calls"]]
+    assert ids == ["call_0_0", "call_0_1"]
+    assert all(isinstance(c["function"]["arguments"], str) for c in assistant["tool_calls"])
+    assert [m["tool_call_id"] for m in conversation.messages if m["role"] == "tool"] == ids

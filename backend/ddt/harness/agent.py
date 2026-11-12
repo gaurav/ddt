@@ -45,6 +45,33 @@ How to work:
 """
 
 
+def _normalise_calls(calls: list, step: int) -> list[dict]:
+    """Make a model's tool calls safe to send back to it.
+
+    Small local models do not always follow the OpenAI shape: some give `arguments` as an object
+    instead of a JSON string, and some leave out the call id. The endpoint rejects the next
+    request if the history contains either, so both are repaired here.
+    """
+    out = []
+    for i, call in enumerate(calls):
+        if not isinstance(call, dict):
+            continue
+        fn = call.get("function") if isinstance(call.get("function"), dict) else {}
+        arguments = fn.get("arguments")
+        if arguments is None:
+            arguments = "{}"
+        elif not isinstance(arguments, str):
+            arguments = json.dumps(arguments, ensure_ascii=False)
+        out.append(
+            {
+                "id": call.get("id") or f"call_{step}_{i}",
+                "type": "function",
+                "function": {"name": str(fn.get("name") or ""), "arguments": arguments},
+            }
+        )
+    return out
+
+
 class ChatClient(Protocol):
     def complete(self, model: str, messages: list[dict], tools: list[dict]) -> dict:
         """Return the assistant message as a dict: {"content": ..., "tool_calls": [...]}."""
@@ -91,9 +118,9 @@ class Conversation:
     ) -> None:
         """Run one user turn to completion, reporting each step through `emit`."""
         self.messages.append({"role": "user", "content": user_text})
-        for _ in range(MAX_STEPS):
+        for step in range(MAX_STEPS):
             message = client.complete(model, self.messages, TOOLS)
-            calls = message.get("tool_calls") or []
+            calls = _normalise_calls(message.get("tool_calls") or [], step)
             entry = {"role": "assistant", "content": message.get("content") or ""}
             if calls:
                 entry["tool_calls"] = calls
@@ -103,17 +130,14 @@ class Conversation:
             if not calls:
                 return
             for call in calls:
-                fn = call.get("function") or {}
-                name, arguments = fn.get("name", ""), fn.get("arguments")
+                name, arguments = call["function"]["name"], call["function"]["arguments"]
                 emit({"type": "tool_call", "name": name, "arguments": arguments})
                 with self.lock:
                     outcome = call_tool(self.project, name, arguments, author=model)
                 text = json.dumps(outcome, ensure_ascii=False)
                 if len(text) > MAX_TOOL_RESULT_CHARS:
                     text = text[:MAX_TOOL_RESULT_CHARS] + "… (truncated)"
-                self.messages.append(
-                    {"role": "tool", "tool_call_id": call.get("id", ""), "content": text}
-                )
+                self.messages.append({"role": "tool", "tool_call_id": call["id"], "content": text})
                 emit(
                     {
                         "type": "tool_result",
