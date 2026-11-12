@@ -1,0 +1,49 @@
+ddt: 1
+source:
+  file: ../../data/henderson/henderson.csv
+  sha256: 89a88e6f8b7edcd34e13e3e9d38516cd953c580c9ac84c6b7b5f62055f8609ff
+  encoding: utf-8/cp1252
+  header_renames:
+  - index: 7
+    original: scientificName
+    name: scientificName_1
+  - index: 8
+    original: vernacularName
+    name: vernacularName_1
+  - index: 28
+    original: scientificName
+    name: scientificName_2
+  - index: 31
+    original: vernacularName
+    name: vernacularName_2
+  - index: 55
+    original: ' Name'
+    name: Name
+  - index: 56
+    original: ' Validity'
+    name: Validity
+schema: occurrence.schema.json
+fields:
+  occurrenceID: catalogNumber
+  basisOfRecord: basisOfRecord
+  institutionCode: institutionCode
+  collectionCode: collectionCode
+  modified: $substringAfter(`dc:modified`, "'")
+  scientificName: scientificName_2
+  verbatimIdentification: ScrapedName
+  vernacularName: vernacularName_2
+  kingdom: Kingdom
+  phylum: Phylum
+  class: Class
+  order: Order
+  family: Family
+  genus: Genus
+  identifiedBy: identifiedBy
+  eventDate: $substringAfter(dateIdentified, "'")
+  verbatimEventDate: $substringAfter(VerbatimDate, "'")
+  country: country
+  countryCode: countryCode
+  stateProvince: 'stateProvince = "Colo" ? "Colorado" : stateProvince'
+  locality: AnnotatorLocality
+  verbatimLocality: verbatimLocality
+  associatedMedia: associatedMedia
